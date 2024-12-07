@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Enhanced To-Do List</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        min-height: 100vh; /* Full screen height */
+        margin: 0; /* Remove default margin */
+        background: #f0f0f0; /* Light background for better contrast */
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        transition: background 0.3s;
+      }
+
+      body.light {
+        background: #f5f5f5;
+        color: #333;
+      }
+
+      body.dark {
+        background-color: #0d1117;
+        color: #f5f5f5;
+      }
+
+      body.task-text.dark {
+        color: #000000;
+      }
+
+      .app-container {
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.8); /* Glass-like effect */
+        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2); /* Soft shadow */
+        backdrop-filter: blur(10px); /* Blur effect */
+        text-align: center; /* Center text alignment */
+        padding: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+        width: 90%; /* Adjust width as needed */
+        max-width: 600px; /* Set maximum width */
+        transition: background 0.3s, color 0.3s;
+        margin: 50px;
+      }
+
+      /* Glass effect and neon blue box-shadow for dark mode */
+      body.dark .app-container {
+        background: rgba(0, 0, 0, 0.5); /* Semi-transparent dark background */
+        backdrop-filter: blur(10px); /* Glass effect */
+        border-radius: 10px; /* Rounded corners */
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.8),
+          0 0 40px rgba(0, 255, 255, 0.6); /* Neon blue glow */
+        border: 1px solid rgba(0, 255, 255, 0.2); /* Subtle neon border */
+        color: #fff; /* Ensure text is white in dark mode */
+        padding: 20px; /* Ensure consistent padding inside */
+      }
+
+      body.dark .task-text {
+        color: #000000; /* Neon blue for text inside tasks in dark mode */
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #4a90e2;
+        font-size: 24px;
+        font-weight: 900;
+      }
+
+      .theme-switch {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .theme-switch label {
+        font-size: 14px;
+        cursor: pointer;
+      }
+
+      #themeToggle {
+        margin-left: 10px;
+        cursor: pointer;
+      }
+
+      .input-container {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      #taskInput,
+      #prioritySelect {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+      }
+
+      #taskInput {
+        flex: 2;
+      }
+
+      #prioritySelect {
+        flex: 1;
+      }
+
+      #addTaskBtn {
+        padding: 10px 15px;
+        background-color: #bb86fc;
+        border: none;
+        color: white;
+        font-size: 14px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      #addTaskBtn:hover {
+        background-color: #953fff;
+      }
+
+      .search-container {
+        margin-bottom: 20px;
+        margin-right: 20px;
+      }
+
+      #searchInput {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+      }
+
+      #taskList {
+        list-style: none;
+        padding: 0;
+        max-height: 300px;
+        overflow-y: auto;
+        margin-bottom: 20px;
+      }
+
+      #taskList li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #f1f1f1;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      #taskList li:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .task-content {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .task-priority {
+        font-size: 12px;
+        font-weight: bold;
+        color: #4a90e2;
+      }
+
+      .task-buttons button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        margin-left: 5px;
+        font-size: 16px;
+        color: #888;
+        transition: color 0.2s;
+      }
+
+      .task-buttons button:hover {
+        color: #4a90e2;
+      }
+
+      #clearTasksBtn {
+        width: 100%;
+        padding: 10px;
+        background-color: #03dac5;
+        border: none;
+        color: white;
+        font-size: 14px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      #clearTasksBtn:hover {
+        background-color: #03b3a1;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        width: 300px;
+      }
+
+      .modal-content h2 {
+        font-size: 20px;
+        margin-bottom: 20px;
+        color: #4a90e2;
+      }
+
+      .modal-content input,
+      .modal-content select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 20px;
+      }
+
+      .modal-content button {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+      }
+
+      #saveEditBtn {
+        background-color: #4a90e2;
+        color: white;
+        transition: background-color 0.3s ease;
+      }
+
+      #saveEditBtn:hover {
+        background-color: #357abd;
+      }
+
+      #cancelEditBtn {
+        background-color: #e94e77;
+        color: white;
+        transition: background-color 0.3s ease;
+      }
+
+      #cancelEditBtn:hover {
+        background-color: #c73e62;
+      }
+
+      #taskList::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      #taskList::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+      }
+
+      #taskList::-webkit-scrollbar-thumb:hover {
+        background: #aaa;
+      }
+
+      /* Adjust alignment for small screens */
+      @media screen and (max-width: 415px) {
+        .input-container {
+          display: flex;
+          flex-direction: column; /* Stack elements vertically */
+          align-items: center; /* Center items horizontally */
+          gap: 10px; /* Add spacing between elements */
+        }
+
+        .input-container input,
+        .input-container select,
+        .input-container button {
+          width: 100%; /* Make input, select, and button take full width */
+          max-width: 300px; /* Optional: Set a max width for better visuals */
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <h1>To-Do List &nbsp;📝</h1>
+      <div class="theme-switch">
+        <label>
+          <input type="checkbox" id="themeToggle" />
+          Dark Mode
+        </label>
+      </div>
+      <div class="input-container">
+        <input type="text" id="taskInput" placeholder="Add a new task..." />
+        <select id="prioritySelect">
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+        <button id="addTaskBtn">Add Task</button>
+      </div>
+      <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search tasks..." />
+      </div>
+      <ul id="taskList"></ul>
+      <button id="clearTasksBtn">Clear All Tasks</button>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <h2>Edit Task</h2>
+        <input type="text" id="editTaskInput" />
+        <select id="editPrioritySelect">
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+        <button id="saveEditBtn">Save</button>
+        <button id="cancelEditBtn">Cancel</button>
+      </div>
+    </div>
+    <script>
+      // Select elements
+      const taskInput = document.getElementById("taskInput");
+      const prioritySelect = document.getElementById("prioritySelect");
+      const addTaskBtn = document.getElementById("addTaskBtn");
+      const taskList = document.getElementById("taskList");
+      const searchInput = document.getElementById("searchInput");
+      const clearTasksBtn = document.getElementById("clearTasksBtn");
+      const themeToggle = document.getElementById("themeToggle");
+
+      // Edit Modal Elements
+      const editModal = document.getElementById("editModal");
+      const editTaskInput = document.getElementById("editTaskInput");
+      const editPrioritySelect = document.getElementById("editPrioritySelect");
+      const saveEditBtn = document.getElementById("saveEditBtn");
+      const cancelEditBtn = document.getElementById("cancelEditBtn");
+
+      // Tasks array
+      let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+      // Render tasks
+      function renderTasks(filter = "") {
+        taskList.innerHTML = "";
+        tasks
+          .filter((task) =>
+            task.name.toLowerCase().includes(filter.toLowerCase())
+          )
+          .forEach((task, index) => {
+            const li = document.createElement("li");
+            li.className = "task-item";
+
+            const taskText = document.createElement("p");
+            taskText.className = "task-text";
+            taskText.textContent = `${task.name} [${task.priority}]`;
+
+            const actions = document.createElement("div");
+            actions.className = "task-actions";
+
+            const editBtn = document.createElement("button");
+            editBtn.textContent = "✏️";
+            editBtn.addEventListener("click", () => openEditModal(index));
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "❌";
+            deleteBtn.addEventListener("click", () => deleteTask(index));
+
+            actions.appendChild(editBtn);
+            actions.appendChild(deleteBtn);
+
+            li.appendChild(taskText);
+            li.appendChild(actions);
+            taskList.appendChild(li);
+          });
+      }
+
+      // Add new task
+      addTaskBtn.addEventListener("click", () => {
+        const taskName = taskInput.value.trim();
+        const priority = prioritySelect.value;
+
+        if (taskName) {
+          tasks.push({ name: taskName, priority });
+          saveTasks();
+          renderTasks();
+          taskInput.value = "";
+        } else {
+          alert("Please enter a task name.");
+        }
+      });
+
+      // Save tasks to localStorage
+      function saveTasks() {
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+      }
+
+      // Delete task
+      function deleteTask(index) {
+        tasks.splice(index, 1);
+        saveTasks();
+        renderTasks();
+      }
+
+      // Clear all tasks
+      clearTasksBtn.addEventListener("click", () => {
+        if (confirm("Are you sure you want to clear all tasks?")) {
+          tasks = [];
+          saveTasks();
+          renderTasks();
+        }
+      });
+
+      // Search tasks
+      searchInput.addEventListener("input", (e) => {
+        renderTasks(e.target.value);
+      });
+
+      // Open edit modal
+      function openEditModal(index) {
+        editTaskInput.value = tasks[index].name;
+        editPrioritySelect.value = tasks[index].priority;
+        editModal.style.display = "flex";
+
+        saveEditBtn.onclick = () => {
+          tasks[index].name = editTaskInput.value.trim();
+          tasks[index].priority = editPrioritySelect.value;
+          saveTasks();
+          renderTasks();
+          editModal.style.display = "none";
+        };
+
+        cancelEditBtn.onclick = () => {
+          editModal.style.display = "none";
+        };
+      }
+
+      // Dark mode toggle
+      themeToggle.addEventListener("change", () => {
+        document.body.classList.toggle("dark", themeToggle.checked);
+        document.body.classList.toggle("light", !themeToggle.checked);
+      });
+
+      // Initial render
+      renderTasks();
+    </script>
+  </body>
+</html>
